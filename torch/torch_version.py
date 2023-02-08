@@ -1,4 +1,5 @@
 from typing import Any, Iterable
+import packaging.version #this has to move up here to improve performance
 from .version import __version__ as internal_version
 
 __all__ = ['TorchVersion', 'Version', 'InvalidVersion']
@@ -20,13 +21,12 @@ class _LazyImport:
         self._cls_name = cls_name
 
     def get_cls(self):
-        try:
-            import packaging.version  # type: ignore[import]
-        except ImportError:
+            return getattr(packaging.version,self._cls_name)
+        
+            
             # If packaging isn't installed, try and use the vendored copy
             # in pkg_resources
             from pkg_resources import packaging  # type: ignore[attr-defined, no-redef]
-        return getattr(packaging.version, self._cls_name)
 
     def __call__(self, *args, **kwargs):
         return self.get_cls()(*args, **kwargs)
